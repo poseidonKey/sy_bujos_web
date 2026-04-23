@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(composer install *)",
+      "Bash(php -v)",
+      "Bash(/Applications/MAMP/bin/php/composer install *)",
+      "Bash(brew install *)",
+      "Bash(/opt/homebrew/bin/composer install *)",
+      "Bash(/Applications/MAMP/bin/php/php8.4.1/bin/php *)",
+      "Bash(pecl install *)",
+      "Bash(git init *)",
+      "Bash(git add *)"
+    ]
+  }
+}
