@@ -3,6 +3,9 @@
  * 데이터베이스 설정 - Firestore REST API 사용
  */
 
+// Composer 오토로더
+require_once __DIR__ . '/../vendor/autoload.php';
+
 // .env 파일 로드
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->load();

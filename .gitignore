@@ -1,6 +1,7 @@
 /vendor/
 /.env
 *.log
+config/firebase-key.json
 .DS_Store
 .idea/
 .vscode/

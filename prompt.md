@@ -8,3 +8,6 @@
 
 ### 1단계 기본 구성 설정을 진행해 줘.
   - http://localhost:8888/sy_bujos_web 이 기본 주소이고 서버는 MAMP 임
+
+  ###  프로젝트의  이전 단계에 이어 파이어베이스 관련 설정 작업을 진행해 줘.
+  - http://localhost:8888/sy_bujos_web 이 기본 주소이고 서버는 MAMP 임
