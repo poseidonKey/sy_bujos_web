@@ -79,17 +79,19 @@ class FirestoreClient {
     }
 
     public function collection(string $name): FirestoreCollection {
-        return new FirestoreCollection($this->http, "{$this->baseUrl}/{$name}");
+        return new FirestoreCollection($this->http, "{$this->baseUrl}/{$name}", $this->token);
     }
 }
 
 class FirestoreCollection {
     private Client $http;
     private string $collectionUrl;
+    private string $token;
 
-    public function __construct(Client $http, string $collectionUrl) {
+    public function __construct(Client $http, string $collectionUrl, string $token) {
         $this->http = $http;
         $this->collectionUrl = $collectionUrl;
+        $this->token = $token;
     }
 
     public function add(array $data): array {
@@ -113,15 +115,33 @@ class FirestoreCollection {
     }
 
     public function update(string $id, array $data): array {
-        $updateMask = implode(',', array_keys($data));
-        $response = $this->http->patch("{$this->collectionUrl}/{$id}", [
-            'json' => [
-                'fields' => $this->encodeFields($data),
-                'updateMask' => ['fieldPaths' => array_keys($data)],
-            ],
-            'query' => ['updateMask' => $updateMask],
+        // Firestore API 는 updateMask 를 쿼리 파라미터로 요구함
+        // 형식: ?updateMask.fieldPaths=field1&updateMask.fieldPaths=field2
+        $maskParams = [];
+        foreach (array_keys($data) as $field) {
+            $maskParams[] = "updateMask.fieldPaths=" . urlencode($field);
+        }
+        $maskQuery = implode('&', $maskParams);
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, "{$this->collectionUrl}/{$id}?{$maskQuery}");
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(['fields' => $this->encodeFields($data)]));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $this->token,
         ]);
-        return json_decode($response->getBody()->getContents(), true);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($httpCode >= 400) {
+            throw new \Exception("Firestore update failed: {$response}");
+        }
+
+        return json_decode($response, true);
     }
 
     public function delete(string $id): void {
@@ -156,13 +176,25 @@ class FirestoreCollection {
     }
 
     public function getAll(): array {
-        $response = $this->http->get($this->collectionUrl);
-        $data = json_decode($response->getBody()->getContents(), true);
-
         $docs = [];
-        foreach ($data['documents'] ?? [] as $doc) {
-            $docs[] = $this->decodeDocument($doc);
-        }
+        $pageToken = '';
+
+        do {
+            $url = $this->collectionUrl . '?pageSize=100';
+            if ($pageToken) {
+                $url .= '&pageToken=' . urlencode($pageToken);
+            }
+
+            $response = $this->http->get($url);
+            $data = json_decode($response->getBody()->getContents(), true);
+
+            foreach ($data['documents'] ?? [] as $doc) {
+                $docs[] = $this->decodeDocument($doc);
+            }
+
+            $pageToken = $data['nextPageToken'] ?? '';
+        } while ($pageToken);
+
         return $docs;
     }
 
