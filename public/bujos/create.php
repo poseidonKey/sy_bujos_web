@@ -24,13 +24,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'etc' => $_POST['etc'] ?? '',
             'isBujo' => isset($_POST['isBujo']),
             'groupName' => $_POST['groupName'] ?? null,
-            'categoryId' => $_POST['categoryId'] ?? '',
+            'categoryId' => $_POST['categoryId'] ?: '일반',
             'createdAt' => new DateTime(),
         ];
 
         // 검증
-        if (empty($data['name']) || empty($data['categoryId'])) {
-            throw new Exception('이름과 카테고리는 필수 항목입니다.');
+        if (empty($data['name'])) {
+            throw new Exception('이름은 필수 항목입니다.');
         }
 
         $bujosCollection->add($data);
@@ -65,12 +65,12 @@ renderHeader('부조 생성');
     </div>
     <div class="col-md-6">
         <label class="form-label">DDay *</label>
-        <input type="date" name="dDay" class="form-control" required>
+        <input type="date" name="dDay" class="form-control" value="<?= date('Y-m-d') ?>" required>
     </div>
     <div class="col-md-6">
-        <label class="form-label">카테고리 *</label>
-        <select name="categoryId" class="form-select" required>
-            <option value="">선택</option>
+        <label class="form-label">카테고리</label>
+        <select name="categoryId" class="form-select">
+            <option value="">일반</option>
             <?php foreach ($categories as $cat): ?>
                 <option value="<?= e($cat['id']) ?>"><?= e($cat['name']) ?></option>
             <?php endforeach; ?>
@@ -91,7 +91,7 @@ renderHeader('부조 생성');
     <div class="col-12">
         <div class="form-check">
             <input type="checkbox" name="isBujo" class="form-check-input" value="1" checked>
-            <label class="form-check-label">부조 완료 상태</label>
+            <label class="form-check-label">부조함</label>
         </div>
     </div>
     <div class="col-12">

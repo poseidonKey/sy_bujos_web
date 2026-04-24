@@ -40,8 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'categoryId' => $_POST['categoryId'] ?? '',
         ];
 
-        if (empty($data['name']) || empty($data['categoryId'])) {
-            throw new Exception('이름과 카테고리는 필수 항목입니다.');
+        if (empty($data['name'])) {
+            throw new Exception('이름은 필수 항목입니다.');
         }
 
         $bujosCollection->update($id, $data);
@@ -80,11 +80,17 @@ renderHeader('부조 수정');
                value="<?= $bujo['dDay'] instanceof DateTime ? $bujo['dDay']->format('Y-m-d') : '' ?>" required>
     </div>
     <div class="col-md-6">
-        <label class="form-label">카테고리 *</label>
-        <select name="categoryId" class="form-select" required>
-            <option value="">선택</option>
+        <label class="form-label">카테고리</label>
+        <select name="categoryId" class="form-select">
+            <option value="">일반</option>
+            <?php
+            // categoryId 안전 추출
+            $bujoCategoryId = isset($bujo['categoryId'])
+                ? (is_array($bujo['categoryId']) ? ($bujo['categoryId']['stringValue'] ?? $bujo['categoryId'][0] ?? '') : $bujo['categoryId'])
+                : '';
+            ?>
             <?php foreach ($categories as $cat): ?>
-                <option value="<?= e($cat['id']) ?>" <?= $bujo['categoryId'] === $cat['id'] ? 'selected' : '' ?>>
+                <option value="<?= e($cat['id']) ?>" <?= $bujoCategoryId === $cat['id'] ? 'selected' : '' ?>>
                     <?= e($cat['name']) ?>
                 </option>
             <?php endforeach; ?>
@@ -95,18 +101,15 @@ renderHeader('부조 수정');
         <input type="text" name="reason" class="form-control" value="<?= e($bujo['reason']) ?>" required>
     </div>
     <div class="col-md-6">
-        <label class="form-label">그룹명</label>
-        <input type="text" name="groupName" class="form-control" value="<?= e($bujo['groupName'] ?? '') ?>">
+        <label class="form-label">상태 *</label>
+        <select name="isBujo" class="form-select" required>
+            <option value="1" <?= $bujo['isBujo'] ? 'selected' : '' ?>>부조함</option>
+            <option value="0" <?= !$bujo['isBujo'] ? 'selected' : '' ?>>받음</option>
+        </select>
     </div>
-    <div class="col-12">
+    <div class="col-md-6">
         <label class="form-label">비고</label>
-        <textarea name="etc" class="form-control" rows="2"><?= e($bujo['etc'] ?? '') ?></textarea>
-    </div>
-    <div class="col-12">
-        <div class="form-check">
-            <input type="checkbox" name="isBujo" class="form-check-input" value="1" <?= $bujo['isBujo'] ? 'checked' : '' ?>>
-            <label class="form-check-label">부조 완료 상태</label>
-        </div>
+        <input type="text" name="etc" class="form-control" value="<?= e($bujo['etc'] ?? '') ?>">
     </div>
     <div class="col-12">
         <button type="submit" class="btn btn-primary">수정</button>

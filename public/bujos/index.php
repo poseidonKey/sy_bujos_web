@@ -45,6 +45,24 @@ usort($allBujos, function ($a, $b) use ($sortBy, $sortOrder) {
     return $sortOrder === 'desc' ? -$result : $result;
 });
 
+// isBujo 통계 계산
+$receivedCount = 0;   // 받은 건수 (isBujo = true)
+$givenCount = 0;      // 준 건수 (isBujo = false)
+$receivedTotal = 0;   // 받은 금액 합계
+$givenTotal = 0;      // 준 금액 합계
+foreach ($allBujos as $bujo) {
+    $isBujo = $bujo['isBujo'] ?? false;
+    $account = is_array($bujo['account']) ? (int)($bujo['account']['integerValue'] ?? $bujo['account'][0] ?? 0) : (int)$bujo['account'];
+    if ($isBujo) {
+        $receivedCount++;
+        $receivedTotal += $account;
+    } else {
+        $givenCount++;
+        $givenTotal += $account;
+    }
+}
+$balance = $receivedTotal - $givenTotal;  // 최종 잔액
+
 // 페이지네이션
 $totalItems = count($allBujos);
 $totalPages = max(1, (int) ceil($totalItems / $perPage));
@@ -66,7 +84,16 @@ renderHeader('부조 목록');
 
 <div class="row mb-4">
     <div class="col-12">
-        <h1>부조 목록</h1>
+        <h1>부조 목록
+            <span class="badge bg-primary">전체: <?= $totalItems ?>건</span>
+        </h1>
+        <div class="d-flex gap-2 flex-wrap">
+            <span class="badge bg-success">받은 건수: <?= number_format($receivedCount) ?>건</span>
+            <span class="badge bg-info">준 건수: <?= number_format($givenCount) ?>건</span>
+            <span class="badge bg-success">받은 금액: ₩<?= number_format($receivedTotal) ?></span>
+            <span class="badge bg-warning text-dark">준 금액: ₩<?= number_format($givenTotal) ?></span>
+            <span class="badge <?= $balance >= 0 ? 'bg-primary' : 'bg-danger' ?>">최종 잔액: ₩<?= number_format($balance) ?></span>
+        </div>
     </div>
 </div>
 
@@ -107,17 +134,17 @@ renderHeader('부조 목록');
         <thead class="table-dark">
             <tr>
                 <th style="width: 12.5%">
-                    <a href="?sortBy=name&sortOrder=<?= $sortBy === 'name' && $sortOrder === 'asc' ? 'desc' : 'asc' ?><?= $categoryId ? '&category=' . urlencode($categoryId) : '' ?>" class="text-decoration-none text-dark">
+                    <a href="?sortBy=name&sortOrder=<?= $sortBy === 'name' && $sortOrder === 'asc' ? 'desc' : 'asc' ?><?= $categoryId ? '&category=' . urlencode($categoryId) : '' ?>" class="text-decoration-none text-white">
                         이름 <?= ($sortBy === 'name' ? ($sortOrder === 'asc' ? '↑' : '↓') : '') ?>
                     </a>
                 </th>
                 <th style="width: 12.5%">
-                    <a href="?sortBy=account&sortOrder=<?= $sortBy === 'account' && $sortOrder === 'asc' ? 'desc' : 'asc' ?><?= $categoryId ? '&category=' . urlencode($categoryId) : '' ?>" class="text-decoration-none text-dark">
+                    <a href="?sortBy=account&sortOrder=<?= $sortBy === 'account' && $sortOrder === 'asc' ? 'desc' : 'asc' ?><?= $categoryId ? '&category=' . urlencode($categoryId) : '' ?>" class="text-decoration-none text-white">
                         금액 <?= ($sortBy === 'account' ? ($sortOrder === 'asc' ? '↑' : '↓') : '') ?>
                     </a>
                 </th>
                 <th style="width: 12.5%">
-                    <a href="?sortBy=dDay&sortOrder=<?= $sortBy === 'dDay' && $sortOrder === 'asc' ? 'desc' : 'asc' ?><?= $categoryId ? '&category=' . urlencode($categoryId) : '' ?>" class="text-decoration-none text-dark">
+                    <a href="?sortBy=dDay&sortOrder=<?= $sortBy === 'dDay' && $sortOrder === 'asc' ? 'desc' : 'asc' ?><?= $categoryId ? '&category=' . urlencode($categoryId) : '' ?>" class="text-decoration-none text-white">
                         DDay <?= ($sortBy === 'dDay' ? ($sortOrder === 'asc' ? '↑' : '↓') : '') ?>
                     </a>
                 </th>
@@ -159,8 +186,8 @@ renderHeader('부조 목록');
                         <td>₩<?= formatNumber($account) ?></td>
                         <td><?= $dDayDisplay ?></td>
                         <td><?= $reason ?></td>
-                        <td><?= e($categoryId && isset($categoriesById[$categoryId]) ? $categoriesById[$categoryId]['name'] : '소속 카테고리 없음') ?></td>
-                        <td><?= $isBujo ? '<span class="badge bg-success">완료</span>' : '<span class="badge bg-secondary">대기</span>' ?></td>
+                        <td><?= e($categoryId && isset($categoriesById[$categoryId]) ? $categoriesById[$categoryId]['name'] : '일반') ?></td>
+                        <td><?= $isBujo ? '<span class="badge bg-success">부조함</span>' : '<span class="badge bg-secondary">받음</span>' ?></td>
                         <td><?= $etc ?></td>
                         <td>
                             <a href="/sy_bujos_web/public/bujos/edit.php?id=<?= $bujoId ?>" class="btn btn-sm btn-outline-primary">수정</a>
@@ -177,24 +204,57 @@ renderHeader('부조 목록');
 <?php if ($totalPages > 1): ?>
 <nav aria-label="Page navigation" class="mt-4">
     <ul class="pagination justify-content-center">
+        <?php
+        $pageGroup = ceil($page / 5);
+        $totalGroups = ceil($totalPages / 5);
+        $startPage = ($pageGroup - 1) * 5 + 1;
+        $endPage = min($startPage + 4, $totalPages);
+
+        // 이전 그룹 버튼 (<<)
+        if ($pageGroup > 1):
+            $prevGroupUrl = '?page=' . (($pageGroup - 1) * 5) . ($categoryId ? '&category=' . urlencode($categoryId) : '') . ($sortBy ? '&sortBy=' . urlencode($sortBy) : '') . ($sortOrder ? '&sortOrder=' . urlencode($sortOrder) : '');
+        ?>
+            <li class="page-item">
+                <a class="page-link" href="<?= $prevGroupUrl ?>" aria-label="Previous Group">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+        <?php endif; ?>
+
+        <!-- 이전 페이지 버튼 (<) -->
         <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
             <?php $prevUrl = '?page=' . ($page - 1) . ($categoryId ? '&category=' . urlencode($categoryId) : '') . ($sortBy ? '&sortBy=' . urlencode($sortBy) : '') . ($sortOrder ? '&sortOrder=' . urlencode($sortOrder) : ''); ?>
             <a class="page-link" href="<?= $prevUrl ?>" aria-label="Previous">
-                <span aria-hidden="true">&laquo;</span>
+                <span aria-hidden="true">&lsaquo;</span>
             </a>
         </li>
-        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+
+        <!-- 페이지 번호 -->
+        <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
             <li class="page-item <?= $i === $page ? 'active' : '' ?>">
                 <?php $pageNumUrl = '?page=' . $i . ($categoryId ? '&category=' . urlencode($categoryId) : '') . ($sortBy ? '&sortBy=' . urlencode($sortBy) : '') . ($sortOrder ? '&sortOrder=' . urlencode($sortOrder) : ''); ?>
                 <a class="page-link" href="<?= $pageNumUrl ?>"><?= $i ?></a>
             </li>
         <?php endfor; ?>
+
+        <!-- 다음 페이지 버튼 (>) -->
         <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>">
             <?php $nextUrl = '?page=' . ($page + 1) . ($categoryId ? '&category=' . urlencode($categoryId) : '') . ($sortBy ? '&sortBy=' . urlencode($sortBy) : '') . ($sortOrder ? '&sortOrder=' . urlencode($sortOrder) : ''); ?>
             <a class="page-link" href="<?= $nextUrl ?>" aria-label="Next">
-                <span aria-hidden="true">&raquo;</span>
+                <span aria-hidden="true">&rsaquo;</span>
             </a>
         </li>
+
+        <!-- 다음 그룹 버튼 (>>) -->
+        <?php if ($pageGroup < $totalGroups):
+            $nextGroupUrl = '?page=' . ($pageGroup * 5 + 1) . ($categoryId ? '&category=' . urlencode($categoryId) : '') . ($sortBy ? '&sortBy=' . urlencode($sortBy) : '') . ($sortOrder ? '&sortOrder=' . urlencode($sortOrder) : '');
+        ?>
+            <li class="page-item">
+                <a class="page-link" href="<?= $nextGroupUrl ?>" aria-label="Next Group">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        <?php endif; ?>
     </ul>
 </nav>
 <?php endif; ?>
