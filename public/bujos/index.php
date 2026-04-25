@@ -15,6 +15,7 @@ $categoriesCollection = $db->collection('bujo_categories');
 $categoryId = $_GET['category'] ?? null;
 $sortBy = $_GET['sortBy'] ?? 'name';
 $sortOrder = $_GET['sortOrder'] ?? 'asc';
+$search = trim($_GET['search'] ?? '');
 $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
 $perPage = 20;
 
@@ -22,6 +23,21 @@ if ($categoryId) {
     $allBujos = $bujosCollection->where(['categoryId' => $categoryId]);
 } else {
     $allBujos = $bujosCollection->getAll();
+}
+
+// 이름 검색 필터
+if ($search !== '') {
+    $searchLower = mb_strtolower($search, 'UTF-8');
+    $allBujos = array_filter($allBujos, function ($bujo) use ($searchLower) {
+        $name = $bujo['name'] ?? '';
+        if (is_array($name)) {
+            $name = $name['stringValue'] ?? ($name[0] ?? '');
+        }
+        $name = (string)$name;
+        return mb_strpos(mb_strtolower($name, 'UTF-8'), $searchLower, 0, 'UTF-8') !== false;
+    });
+    // array_filter preserves keys, reindex
+    $allBujos = array_values($allBujos);
 }
 
 // 정렬 처리
@@ -99,6 +115,9 @@ renderHeader('부조 목록');
 
 <!-- 필터 -->
 <form method="GET" class="row g-3 mb-4">
+            <div class="col-auto">
+                <div class="input-group"><input type="text" name="search" class="form-control" placeholder="이름 검색" value="<?= e($_GET['search'] ?? '') ?>"><button type="button" class="btn btn-outline-secondary" onclick="window.location='<?= strtok($_SERVER['REQUEST_URI'], '?') ?>'">초기화</button></div>
+            </div>
     <div class="col-auto">
         <select name="category" class="form-select">
             <option value="">전체 카테고리</option>
