@@ -206,7 +206,7 @@ renderHeader('부조 목록');
                         <td><?= $dDayDisplay ?></td>
                         <td><?= $reason ?></td>
                         <td><?= e($categoryId && isset($categoriesById[$categoryId]) ? $categoriesById[$categoryId]['name'] : '일반') ?></td>
-                        <td><?= $isBujo ? '<span class="badge bg-success">부조함</span>' : '<span class="badge bg-secondary">받음</span>' ?></td>
+                        <td><?= $isBujo ? '<span class="badge bg-secondary">받음</span>' : '<span class="badge bg-success">부조함</span>' ?></td>
                         <td><?= $etc ?></td>
                         <td>
                             <a href="/sy_bujos_web/public/bujos/edit.php?id=<?= $bujoId ?>" class="btn btn-sm btn-outline-primary">수정</a>

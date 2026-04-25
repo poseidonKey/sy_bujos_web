@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'dDay' => new DateTime($_POST['dDay'] ?? 'today'),
             'reason' => $_POST['reason'] ?? '',
             'etc' => $_POST['etc'] ?? '',
-            'isBujo' => isset($_POST['isBujo']),
+            'isBujo' => !isset($_POST['isBujo']),
             'groupName' => $_POST['groupName'] ?? null,
             'categoryId' => $_POST['categoryId'] ?: '일반',
             'createdAt' => new DateTime(),
