@@ -86,12 +86,16 @@ class FirestoreClient {
 class FirestoreCollection {
     private Client $http;
     private string $collectionUrl;
+    private string $parent;      // .../documents
+    private string $collectionId; // bujos
     private string $token;
 
     public function __construct(Client $http, string $collectionUrl, string $token) {
         $this->http = $http;
         $this->collectionUrl = $collectionUrl;
         $this->token = $token;
+        $this->collectionId = basename($collectionUrl);
+        $this->parent = dirname($collectionUrl);
     }
 
     public function add(array $data): array {
@@ -150,9 +154,9 @@ class FirestoreCollection {
 
     public function where(array $conditions): array {
         // 간단한 where 구현 (동등 비교만)
-        $filter = null;
+        $filters = [];
         foreach ($conditions as $field => $value) {
-            $filter = [
+            $filters[] = [
                 'fieldFilter' => [
                     'field' => ['fieldPath' => $field],
                     'op' => 'EQUAL',
@@ -161,8 +165,17 @@ class FirestoreCollection {
             ];
         }
 
-        $response = $this->http->post("{$this->collectionUrl}:runQuery", [
-            'json' => ['structuredQuery' => ['where' => $filter]],
+        $filter = count($filters) === 1 ? $filters[0] : ['compositeFilter' => ['op' => 'AND', 'filters' => $filters]];
+
+        $response = $this->http->post("{$this->parent}:runQuery", [
+            'json' => [
+                'structuredQuery' => [
+                    'from' => [
+                        ['collectionId' => $this->collectionId]
+                    ],
+                    'where' => $filter
+                ]
+            ],
         ]);
 
         $results = json_decode($response->getBody()->getContents(), true);
