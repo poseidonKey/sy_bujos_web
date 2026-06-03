@@ -62,34 +62,34 @@ renderHeader('통계');
 <!-- 전체 요약 -->
 <div class="row g-4 mb-4">
     <div class="col-md-3">
-        <div class="card bg-primary text-white">
+        <div class="card bg-primary text-white stat-summary-card">
             <div class="card-body text-center">
                 <h5 class="card-title">전체 건수</h5>
-                <p class="display-4"><?= $totalCount ?></p>
+                <p class="display-4 stat-summary-value"><?= $totalCount ?></p>
             </div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card bg-success text-white">
+        <div class="card bg-success text-white stat-summary-card">
             <div class="card-body text-center">
                 <h5 class="card-title">전체 금액</h5>
-                <p class="display-5">₩<?= formatNumber($totalAmount) ?></p>
+                <p class="display-4 stat-summary-value stat-summary-money-value">₩<?= formatNumber($totalAmount) ?></p>
             </div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card bg-info text-white">
+        <div class="card bg-info text-white stat-summary-card">
             <div class="card-body text-center">
                 <h5 class="card-title">부조 완료</h5>
-                <p class="display-4"><?= $totalBujoCount ?></p>
+                <p class="display-4 stat-summary-value"><?= $totalBujoCount ?></p>
             </div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card bg-warning text-dark">
+        <div class="card bg-warning text-dark stat-summary-card">
             <div class="card-body text-center">
                 <h5 class="card-title">부조 금액</h5>
-                <p class="display-5">₩<?= formatNumber($totalBujoAmount) ?></p>
+                <p class="display-4 stat-summary-value stat-summary-money-value">₩<?= formatNumber($totalBujoAmount) ?></p>
             </div>
         </div>
     </div>

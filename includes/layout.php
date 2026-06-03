@@ -22,12 +22,32 @@ function renderHeader(string $title = 'BUJOS'): void {
         .badge { padding: 0.4em 0.8em; font-weight: 500; }
         .btn { border-radius: 8px; font-weight: 500; }
         .navbar-brand { font-weight: 700; letter-spacing: 0.5px; }
+
+        /* 통계 상단 요약 카드(전체 건수~부조금액) 높이/폰트 흔들림 방지 */
+        .stat-summary-card .card-body {
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .stat-summary-value {
+            line-height: 1.1;
+            min-height: 1.1em;
+            white-space: nowrap;
+            word-break: keep-all;
+        }
+
+        /* 금액(₩) 카드 글자만 더 작게 */
+        .stat-summary-money-value {
+            font-size: 2rem; /* ellipsis 없이 전체 금액이 보이도록 추가 축소 */
+        }
     </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" href="/sy_bujos_web/">BUJOS</a>
+            <a class="navbar-brand" href="/sy_bujos_web/public/">BUJOS</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
