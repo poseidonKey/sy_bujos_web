@@ -2,3 +2,8 @@
 - [x] `public/statistics/index.php` 상단 요약 카드에 stat-summary-card 클래스 추가( CSS 적용 보장 )
 - [x] `includes/layout.php`에 통계 카드 숫자 영역 고정 CSS(정렬/최소높이/줄바꿈 방지) 반영 및 CSS 에러 여부 확인
 - [ ] 변경 후 통계 페이지 상단 카드 4개 크기 동일 렌더링 확인
+- [ ] bujos(부조) 페이지에 “여러 데이터 일괄 추가” 기능 구현
+  - [ ] sample.txt 포맷 다운로드 버튼 구현(Blob 기반)
+  - [ ] textarea 파싱 및 필수/옵션 컬럼 검증
+  - [ ] 여러 건 Firestore 일괄 add(성공/실패 카운트 표시)
+  - [ ] 기능 동작 확인(로컬/서버에서 1~2회 입력 테스트)
