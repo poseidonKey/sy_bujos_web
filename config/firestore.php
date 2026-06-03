@@ -114,6 +114,18 @@ class FirestoreCollection {
         return json_decode($response->getBody()->getContents(), true);
     }
 
+    /**
+     * 특정 문서 id로 set(Replace) - restore에서 id를 유지하기 위함
+     */
+    public function set(string $id, array $data): array {
+        // Firestore REST: PUT /documents/{documentPath}
+        // 문서 전체 overwrite
+        $response = $this->http->put("{$this->collectionUrl}/{$id}", [
+            'json' => ['fields' => $this->encodeFields($data)],
+        ]);
+        return json_decode($response->getBody()->getContents(), true);
+    }
+
     public function get(string $id): ?array {
         try {
             $response = $this->http->get("{$this->collectionUrl}/{$id}");
@@ -159,6 +171,18 @@ class FirestoreCollection {
 
     public function delete(string $id): void {
         $this->http->delete("{$this->collectionUrl}/{$id}");
+    }
+
+    /**
+     * 컬렉션 전체 삭제
+     */
+    public function deleteAll(): void {
+        $docs = $this->getAll();
+        foreach ($docs as $doc) {
+            if (!empty($doc['id'])) {
+                $this->delete((string)$doc['id']);
+            }
+        }
     }
 
     public function where(array $conditions): array {

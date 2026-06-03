@@ -29,9 +29,14 @@ foreach ($bujos as $bujo) {
 }
 
 ?>
-<div class="row">
-    <div class="col-12">
-        <h1 class="mb-4">대시보드</h1>
+<div class="row mb-4">
+    <div class="col-12 d-flex align-items-center justify-content-between">
+        <h1 class="mb-0">대시보드</h1>
+        <div class="ms-auto">
+            <a href="/sy_bujos_web/public/admin/backup.php" class="btn btn-primary">
+                백업/복원
+            </a>
+        </div>
     </div>
 </div>
 <div class="row g-4">
