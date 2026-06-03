@@ -28,7 +28,16 @@ class FirestoreClient {
     }
 
     private function getAccessToken(): string {
-        $keyPath = $_ENV['GOOGLE_APPLICATION_CREDENTIALS'] ?? '';
+        $keyPath = trim($_ENV['GOOGLE_APPLICATION_CREDENTIALS'] ?? '');
+
+        // 환경변수 미설정/오설정인 경우에도 동작하도록 폴백
+        if ($keyPath === '' || !file_exists($keyPath)) {
+            $fallbackKeyPath = __DIR__ . '/firebase-key.json';
+            if (file_exists($fallbackKeyPath)) {
+                $keyPath = $fallbackKeyPath;
+            }
+        }
+
         if (!file_exists($keyPath)) {
             throw new RuntimeException("Service account key not found: {$keyPath}");
         }
